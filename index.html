@@ -28,14 +28,18 @@
             user-select: none;
         }
 
-        body {
+body {
             background: radial-gradient(circle at 50% 0%, #17233b 0%, #090e1a 75%);
             color: var(--text-primary);
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: flex-start;
-            padding: 20px 16px;
+            /* Marge haute sécurisée pour l'heure, l'encoche/Dynamic Island et la batterie iOS */
+            padding-top: max(calc(env(safe-area-inset-top, 0px) + 16px), 54px);
+            padding-bottom: max(calc(env(safe-area-inset-bottom, 0px) + 20px), 30px);
+            padding-left: 16px;
+            padding-right: 16px;
             overflow-y: auto;
         }
 
