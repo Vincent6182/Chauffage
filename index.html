@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Chaudière</title>
-    <!-- Balises Apple Web App -->
+    <!-- Balises Apple Web App Plein Écran -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#090e1a">
@@ -14,7 +14,7 @@
             --bg-dark: #090e1a;
             --text-primary: #ffffff;
             --text-secondary: rgba(255, 255, 255, 0.78);
-            --text-muted: rgba(255, 255, 255, 0.4);
+            --text-muted: rgba(255, 255, 255, 0.42);
             --accent-blue: #3898ff;
             --accent-green: #2eb85c;
             --accent-red: #ff453a;
@@ -29,9 +29,23 @@
             user-select: none;
         }
 
-html, body {
+        html, body {
+            background-color: #090e1a !important;
+            background: #090e1a !important;
+            overscroll-behavior-y: none;
+        }
+
+        /* Fond uni bleu nuit sous l'encoche et la barre d'état iOS */
+        body::before {
+            content: "";
+            position: fixed;
+            top: -120px;
+            left: 0;
+            right: 0;
+            bottom: -120px;
             background-color: #090e1a;
-            background: #090e1a;
+            z-index: -1;
+            pointer-events: none;
         }
 
         body {
@@ -41,195 +55,174 @@ html, body {
             justify-content: center;
             align-items: flex-start;
             /* Marge haute sécurisée pour l'heure, l'encoche/Dynamic Island et la batterie iOS */
-            padding-top: max(calc(env(safe-area-inset-top, 0px) + 16px), 54px);
+            padding-top: max(calc(env(safe-area-inset-top, 0px) + 14px), 52px);
             padding-bottom: max(calc(env(safe-area-inset-bottom, 0px) + 20px), 30px);
-            padding-left: 16px;
-            padding-right: 16px;
+            padding-left: 14px;
+            padding-right: 14px;
             overflow-y: auto;
         }
 
-        .phone-wrapper {
+        .app-grid {
             width: 100%;
-            max-width: 420px;
+            max-width: 440px;
             margin: 0 auto;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            padding-bottom: 30px;
-        }
-
-        /* En-tête style maquette Option A */
-        header {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 14px;
-            margin-top: 6px;
-            margin-bottom: 4px;
-        }
-
-        .location {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            color: var(--text-primary);
-            letter-spacing: -0.2px;
-            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
-        }
-
-        .weather-icon-header {
-            width: 22px;
-            height: 22px;
-            display: flex;
-            align-items: center;
-        }
-
-        /* Sélecteur Aujourd'hui / Demain teinté bleu */
-        .picker {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            background: rgba(25, 38, 62, 0.85);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: 20px;
-            padding: 3px;
-            width: 210px;
-            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.4);
-        }
-
-        .picker button {
-            background: transparent;
-            border: none;
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 13px;
-            font-weight: 500;
-            padding: 6px 0;
-            border-radius: 17px;
-            cursor: pointer;
-            transition: all 0.25s ease;
-        }
-
-        .picker button.active {
-            background: linear-gradient(180deg, rgba(75, 115, 165, 0.65) 0%, rgba(45, 75, 115, 0.65) 100%);
-            color: var(--text-primary);
-            font-weight: 600;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
         }
 
         /* Base des cartes avec effet verre et bordure lumineuse */
         .card {
             border-radius: 20px;
-            padding: 16px 20px;
+            padding: 14px 15px;
             backdrop-filter: blur(24px);
             -webkit-backdrop-filter: blur(24px);
             border: 1px solid rgba(255, 255, 255, 0.14);
             box-shadow: 0 14px 32px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.15);
             position: relative;
             overflow: hidden;
-            transition: transform 0.2s ease, border-color 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 176px;
         }
 
-        /* Couleurs spécifiques par carte (comme sur l'Option A) */
-        #card-matin {
-            background: 
+        .card-full {
+            grid-column: 1 / -1;
+            min-height: auto;
+            padding: 16px 18px;
+        }
+
+        /* Halos colorés par type de pavé */
+        .card-matin {
+            background:
                 radial-gradient(circle at 82% 85%, rgba(46, 204, 113, 0.25) 0%, transparent 55%),
                 radial-gradient(circle at 15% 20%, rgba(65, 130, 210, 0.28) 0%, transparent 60%),
                 linear-gradient(145deg, rgba(38, 56, 86, 0.78) 0%, rgba(22, 33, 52, 0.88) 100%);
         }
 
-        #card-journee {
-            background: 
+        .card-aprem {
+            background:
                 radial-gradient(circle at 82% 55%, rgba(245, 135, 35, 0.48) 0%, rgba(205, 85, 20, 0.22) 48%, transparent 75%),
                 linear-gradient(145deg, rgba(52, 54, 72, 0.78) 0%, rgba(30, 32, 46, 0.88) 100%);
         }
 
-        #card-manuelle {
-            background: 
+        .card-manuelle {
+            background:
                 radial-gradient(circle at 55% 95%, rgba(20, 175, 165, 0.28) 0%, transparent 62%),
                 radial-gradient(circle at 15% 30%, rgba(56, 152, 255, 0.2) 0%, transparent 55%),
                 linear-gradient(145deg, rgba(32, 52, 76, 0.8) 0%, rgba(20, 32, 48, 0.9) 100%);
         }
 
-        /* Ligne d'en-tête de chaque carte avec filet de séparation */
+        /* En-tête de chaque pavé */
         .card-header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            padding-bottom: 12px;
+            align-items: flex-start;
+            gap: 6px;
+            padding-bottom: 10px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .card-title {
+        .card-title-group {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .card-title-row {
             display: flex;
             align-items: center;
-            gap: 9px;
-            font-size: 16px;
+            gap: 7px;
+            font-size: 14px;
             font-weight: 600;
             color: var(--text-primary);
             letter-spacing: -0.2px;
         }
 
-        /* Icône Matin (carré lever de soleil) */
+        .card-day {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: capitalize;
+            color: rgba(142, 202, 230, 0.92);
+            padding-left: 25px;
+        }
+
+        .card-full .card-day {
+            display: none;
+        }
+
         .icon-matin-box {
-            width: 22px;
-            height: 22px;
-            border-radius: 6px;
+            width: 18px;
+            height: 18px;
+            border-radius: 5px;
             background: linear-gradient(180deg, #ff7e36 0%, #ffb347 60%, #3a7bd5 60%, #2b5876 100%);
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
         }
 
         .card-temp {
             font-size: 15px;
-            font-weight: 500;
+            font-weight: 600;
             color: var(--text-secondary);
+            white-space: nowrap;
         }
 
-        /* Chiffre de réglage centré sur la largeur */
+        /* Chiffre de réglage centré */
         .card-setting-container {
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 18px 0 14px 0;
+            padding: 14px 0 10px 0;
         }
 
         .card-setting {
-            font-size: 54px;
+            font-size: 44px;
             font-weight: 700;
-            letter-spacing: -1.5px;
+            letter-spacing: -1.2px;
             color: var(--text-primary);
             text-align: center;
             line-height: 1;
             text-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
 
-        /* Pied de carte : Eau XX°C à la même taille que la température du haut (15px) */
+        .card-full .card-setting {
+            font-size: 54px;
+            letter-spacing: -1.5px;
+        }
+
+        /* Pied de carte */
         .card-footer {
             display: flex;
+            flex-wrap: wrap;
             justify-content: space-between;
             align-items: center;
-            min-height: 28px;
+            gap: 6px;
+            min-height: 24px;
         }
 
         .water-temp {
             color: var(--text-secondary);
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 500;
         }
 
-        /* Badge Plage Optimale vert plein (style Option A) */
+        .card-full .water-temp {
+            font-size: 15px;
+        }
+
+        /* Badge Plage Optimale */
         .badge {
             display: inline-flex;
             align-items: center;
             background: linear-gradient(180deg, #34c759 0%, #249f43 100%);
             color: #ffffff;
-            padding: 5px 12px;
-            border-radius: 14px;
-            font-size: 12px;
+            padding: 3px 9px;
+            border-radius: 12px;
+            font-size: 11px;
             font-weight: 600;
             box-shadow: 0 3px 10px rgba(46, 184, 92, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
             transition: opacity 0.25s ease, transform 0.25s ease;
@@ -244,13 +237,17 @@ html, body {
         /* État Chauffage Coupé */
         .card.cutoff .card-setting {
             color: #ff6961;
-            font-size: 40px;
-            letter-spacing: -0.5px;
+            font-size: 30px;
+            letter-spacing: -0.4px;
         }
 
-        /* Curseur cranté avec barre de progression bleue */
+        .card-full.cutoff .card-setting {
+            font-size: 40px;
+        }
+
+        /* Curseur cranté de 1 en 1 */
         .manual-control {
-            margin: 14px 0 4px 0;
+            margin: 14px 0 6px 0;
             display: flex;
             flex-direction: column;
             gap: 8px;
@@ -263,14 +260,13 @@ html, body {
             align-items: center;
         }
 
-        /* Piste du slider avec remplissage bleu dynamique */
         .custom-slider {
             -webkit-appearance: none;
             appearance: none;
             width: 100%;
             height: 8px;
             border-radius: 4px;
-            background: linear-gradient(to right, #3898ff 0%, #3898ff 68%, rgba(255, 255, 255, 0.16) 68%, rgba(255, 255, 255, 0.16) 100%);
+            background: linear-gradient(to right, #3898ff 0%, #3898ff 24%, rgba(255, 255, 255, 0.16) 24%, rgba(255, 255, 255, 0.16) 100%);
             outline: none;
             position: relative;
             z-index: 2;
@@ -304,7 +300,6 @@ html, body {
             cursor: pointer;
         }
 
-        /* Crans visuels (1 par 1) */
         .slider-ticks {
             position: absolute;
             top: 50%;
@@ -331,7 +326,7 @@ html, body {
         }
 
         .tick.active-tick {
-            background: rgba(56, 152, 255, 0.7);
+            background: rgba(56, 152, 255, 0.75);
         }
 
         .ticks-labels {
@@ -342,7 +337,7 @@ html, body {
             padding: 0 2px;
         }
 
-        /* Chargement et erreurs */
+        /* Chargement et erreur */
         .loading-overlay {
             position: absolute;
             inset: 0;
@@ -357,8 +352,8 @@ html, body {
         }
 
         .spinner {
-            width: 24px;
-            height: 24px;
+            width: 22px;
+            height: 22px;
             border: 3px solid rgba(255, 255, 255, 0.15);
             border-top-color: var(--accent-blue);
             border-radius: 50%;
@@ -366,10 +361,11 @@ html, body {
         }
 
         .error-message {
+            grid-column: 1 / -1;
             color: var(--accent-red);
             font-size: 13px;
             text-align: center;
-            padding: 10px;
+            padding: 8px;
             display: none;
         }
 
@@ -380,305 +376,71 @@ html, body {
 </head>
 <body>
 
-    <div class="phone-wrapper">
-        <!-- En-tête -->
-        <header>
-
-
-            <div class="picker">
-                <button id="btn-today" class="active" onclick="toggleDay('today')">Aujourd'hui</button>
-                <button id="btn-tomorrow" onclick="toggleDay('tomorrow')">Demain</button>
-            </div>
-        </header>
-
-        <!-- CARTE MATIN -->
-        <div class="card" id="card-matin">
-            <div class="loading-overlay" id="loading-matin">
+    <div class="app-grid">
+        <!-- 1. HAUT GAUCHE : MATIN AUJOURD'HUI -->
+        <div class="card card-matin" id="card-today-matin">
+            <div class="loading-overlay" id="loading-today-matin">
                 <div class="spinner"></div>
             </div>
             <div class="card-header">
-                <div class="card-title">
-                    <div class="icon-matin-box">
-                        <svg viewBox="0 0 24 24" width="14" height="14" fill="#fff3b0">
-                            <circle cx="12" cy="13" r="4"/>
-                        </svg>
+                <div class="card-title-group">
+                    <div class="card-title-row">
+                        <div class="icon-matin-box">
+                            <svg viewBox="0 0 24 24" width="12" height="12" fill="#fff3b0">
+                                <circle cx="12" cy="13" r="4"/>
+                            </svg>
+                        </div>
+                        <span>Matin</span>
                     </div>
-                    Matin
+                    <span class="card-day" id="day-today-matin">--</span>
                 </div>
-                <div class="card-temp" id="temp-matin">--°C</div>
+                <div class="card-temp" id="temp-today-matin">--°C</div>
             </div>
             <div class="card-setting-container">
-                <div class="card-setting" id="setting-matin">--</div>
+                <div class="card-setting" id="setting-today-matin">--</div>
             </div>
             <div class="card-footer">
-                <span class="water-temp" id="water-matin">Eau --°C</span>
-                <span class="badge hidden" id="badge-matin">Plage Optimale</span>
+                <span class="water-temp" id="water-today-matin">Eau --°C</span>
+                <span class="badge hidden" id="badge-today-matin">Plage Optimale</span>
             </div>
         </div>
 
-        <!-- CARTE JOURNÉE -->
-        <div class="card" id="card-journee">
-            <div class="loading-overlay" id="loading-journee">
+        <!-- 2. HAUT DROIT : APRÈS-MIDI AUJOURD'HUI -->
+        <div class="card card-aprem" id="card-today-aprem">
+            <div class="loading-overlay" id="loading-today-aprem">
                 <div class="spinner"></div>
             </div>
             <div class="card-header">
-                <div class="card-title">
-                    <svg viewBox="0 0 24 24" width="22" height="22" fill="#ffbe0b" stroke="#ffbe0b" stroke-width="2" stroke-linecap="round">
-                        <circle cx="12" cy="12" r="5"/>
-                        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
-                    </svg>
-                    Jour
+                <div class="card-title-group">
+                    <div class="card-title-row">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="#ffbe0b" stroke="#ffbe0b" stroke-width="2" stroke-linecap="round">
+                            <circle cx="12" cy="12" r="5"/>
+                            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+                        </svg>
+                        <span>Après-midi</span>
+                    </div>
+                    <span class="card-day" id="day-today-aprem">--</span>
                 </div>
-                <div class="card-temp" id="temp-journee">--°C</div>
+                <div class="card-temp" id="temp-today-aprem">--°C</div>
             </div>
             <div class="card-setting-container">
-                <div class="card-setting" id="setting-journee">--</div>
+                <div class="card-setting" id="setting-today-aprem">--</div>
             </div>
             <div class="card-footer">
-                <span class="water-temp" id="water-journee">Eau --°C</span>
-                <span class="badge hidden" id="badge-journee">Plage Optimale</span>
+                <span class="water-temp" id="water-today-aprem">Eau --°C</span>
+                <span class="badge hidden" id="badge-today-aprem">Plage Optimale</span>
             </div>
         </div>
 
-        <!-- CARTE MANUELLE -->
-        <div class="card" id="card-manuelle">
+        <!-- 3. MILIEU GAUCHE : MATIN DEMAIN -->
+        <div class="card card-matin" id="card-tomorrow-matin">
+            <div class="loading-overlay" id="loading-tomorrow-matin">
+                <div class="spinner"></div>
+            </div>
             <div class="card-header">
-                <div class="card-title">
-                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#8ecae6" stroke-width="2" stroke-linecap="round">
-                        <line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/>
-                        <line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/>
-                        <line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/>
-                        <line x1="1" y1="14" x2="7" y2="14"/>
-                        <line x1="9" y1="8" x2="15" y2="8"/>
-                        <line x1="17" y1="16" x2="23" y2="16"/>
-                    </svg>
-                    Manuel
-                </div>
-                <div class="card-temp" id="temp-manuelle">1°C</div>
-            </div>
-
-            <!-- Curseur cranté de 1 en 1 -->
-            <div class="manual-control">
-                <div class="slider-wrapper">
-                    <input type="range" id="manual-slider" class="custom-slider" min="-5" max="20" step="1" value="1">
-                    <div class="slider-ticks" id="slider-ticks"></div>
-                </div>
-                <div class="ticks-labels">
-                    <span>-5°C</span>
-                    <span>0°C</span>
-                    <span>5°C</span>
-                    <span>10°C</span>
-                    <span>15°C</span>
-                    <span>20°C</span>
-                </div>
-            </div>
-
-            <div class="card-setting-container" style="padding-top: 10px;">
-                <div class="card-setting" id="setting-manuelle">3,25</div>
-            </div>
-            <div class="card-footer">
-                <span class="water-temp" id="water-manuelle">Eau 58°C</span>
-                <span class="badge hidden" id="badge-manuelle">Plage Optimale</span>
-            </div>
-        </div>
-
-        <div class="error-message" id="error-msg">Erreur de chargement de la météo.</div>
-    </div>
-
-    <script>
-        const LATITUDE = 48.857;
-        const LONGITUDE = 2.019;
-        
-        let currentDay = 'today';
-        let weatherData = null;
-
-        // Arrondi personnalisé : >= ,5 arrondit au supérieur (ex: 12.5 -> 13)
-        function customRound(val) {
-            return Math.floor(val + 0.5);
-        }
-
-        // Bascule automatique Aujourd'hui (0h-20h59) / Demain (21h-23h59)
-        function initTimeSetting() {
-            const hours = new Date().getHours();
-            currentDay = (hours >= 21) ? 'tomorrow' : 'today';
-            document.getElementById('btn-today').classList.toggle('active', currentDay === 'today');
-            document.getElementById('btn-tomorrow').classList.toggle('active', currentDay === 'tomorrow');
-        }
-
-        // Table de correspondance sans aucun tilde (~)
-        function resolveReglage(temp) {
-            if (temp >= 19) return { reglage: "Coupé", eau: "off", optimal: false };
-            if (temp >= 16 && temp <= 18) return { reglage: "0,75", eau: "44°C", optimal: false };
-            if (temp >= 13 && temp <= 15) return { reglage: "1", eau: "45°C", optimal: false };
-            if (temp >= 10 && temp <= 12) return { reglage: "1,25", eau: "45,8°C", optimal: false };
-            if (temp === 9) return { reglage: "1,5", eau: "46,5°C", optimal: false };
-            if (temp === 8) return { reglage: "1,75", eau: "47,3°C", optimal: false };
-            if (temp === 7) return { reglage: "2", eau: "48°C", optimal: true };
-            if (temp === 6) return { reglage: "2,25", eau: "50°C", optimal: true };
-            if (temp === 5) return { reglage: "2,5", eau: "52°C", optimal: true };
-            if (temp >= 3 && temp <= 4) return { reglage: "2,75", eau: "54°C", optimal: false };
-            if (temp === 2) return { reglage: "3", eau: "56°C", optimal: false };
-            if (temp === 1) return { reglage: "3,25", eau: "58°C", optimal: false };
-            if (temp === 0) return { reglage: "3,5", eau: "60°C", optimal: false };
-            if (temp >= -2 && temp <= -1) return { reglage: "3,75", eau: "62°C", optimal: false };
-            if (temp <= -3) return { reglage: "4", eau: "64°C", optimal: false };
-            return { reglage: "--", eau: "--°C", optimal: false };
-        }
-
-        // Génération des crans visuels du curseur
-        function generateSliderTicks() {
-            const container = document.getElementById('slider-ticks');
-            container.innerHTML = '';
-            for (let i = -5; i <= 20; i++) {
-                const tick = document.createElement('div');
-                tick.classList.add('tick');
-                if (i % 5 === 0) tick.classList.add('major');
-                tick.id = `tick-${i}`;
-                container.appendChild(tick);
-            }
-        }
-
-        // Met à jour la barre bleue et les crans actifs du curseur
-        function updateSliderVisuals(val) {
-            const min = -5;
-            const max = 20;
-            const percentage = ((val - min) / (max - min)) * 100;
-            const slider = document.getElementById('manual-slider');
-            slider.style.background = `linear-gradient(to right, #3898ff 0%, #3898ff ${percentage}%, rgba(255, 255, 255, 0.16) ${percentage}%, rgba(255, 255, 255, 0.16) 100%)`;
-
-            for (let i = min; i <= max; i++) {
-                const tick = document.getElementById(`tick-${i}`);
-                if (tick) tick.classList.toggle('active-tick', i <= val);
-            }
-        }
-
-        // Récupération météo Open-Meteo
-        async function fetchWeather() {
-            document.getElementById('error-msg').style.display = 'none';
-            try {
-                const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${LATITUDE}&longitude=${LONGITUDE}&hourly=temperature_2m&timezone=Europe/Paris&forecast_days=3`);
-                if (!response.ok) throw new Error("Erreur réseau");
-                const data = await response.json();
-                weatherData = data.hourly;
-                updateUI();
-            } catch (err) {
-                document.getElementById('error-msg').style.display = 'block';
-            } finally {
-                ['loading-matin', 'loading-journee'].forEach(id => {
-                    const el = document.getElementById(id);
-                    el.style.opacity = '0';
-                    setTimeout(() => el.style.display = 'none', 300);
-                });
-            }
-        }
-
-        // Calcul des moyennes et mise à jour des cartes
-        function updateUI() {
-            if (!weatherData) return;
-
-            const targetDate = new Date();
-            if (currentDay === 'tomorrow') {
-                targetDate.setDate(targetDate.getDate() + 1);
-            }
-
-            const year = targetDate.getFullYear();
-            const month = String(targetDate.getMonth() + 1).padStart(2, '0');
-            const day = String(targetDate.getDate()).padStart(2, '0');
-            const dateString = `${year}-${month}-${day}`;
-
-            const dayData = [];
-            for (let i = 0; i < weatherData.time.length; i++) {
-                if (weatherData.time[i].startsWith(dateString)) {
-                    const hour = parseInt(weatherData.time[i].substring(11, 13), 10);
-                    dayData.push({ hour, temp: weatherData.temperature_2m[i] });
-                }
-            }
-
-            const matinTemps = dayData.filter(d => d.hour >= 6 && d.hour <= 9).map(d => d.temp);
-            const matinAvg = matinTemps.length ? (matinTemps.reduce((a, b) => a + b, 0) / matinTemps.length) : null;
-
-            const journeeTemps = dayData.filter(d => d.hour >= 10 && d.hour <= 20).map(d => d.temp);
-            const journeeAvg = journeeTemps.length ? (journeeTemps.reduce((a, b) => a + b, 0) / journeeTemps.length) : null;
-
-            updateCard('matin', matinAvg);
-            updateCard('journee', journeeAvg);
-        }
-
-        function updateCard(type, exactTemp) {
-            const tempEl = document.getElementById(`temp-${type}`);
-            const settingEl = document.getElementById(`setting-${type}`);
-            const waterEl = document.getElementById(`water-${type}`);
-            const badgeEl = document.getElementById(`badge-${type}`);
-            const cardEl = document.getElementById(`card-${type}`);
-
-            if (exactTemp === null || exactTemp === undefined) {
-                tempEl.textContent = "--°C";
-                settingEl.textContent = "--";
-                waterEl.textContent = "Eau --°C";
-                badgeEl.classList.add('hidden');
-                cardEl.classList.remove('cutoff');
-                return;
-            }
-
-            const roundedTemp = customRound(exactTemp);
-            tempEl.textContent = `${roundedTemp}°C`;
-
-            const result = resolveReglage(roundedTemp);
-            settingEl.textContent = result.reglage;
-
-            if (result.reglage === "Coupé") {
-                cardEl.classList.add('cutoff');
-                waterEl.textContent = "Chauffage coupé";
-            } else {
-                cardEl.classList.remove('cutoff');
-                waterEl.textContent = `Eau ${result.eau}`;
-            }
-
-            badgeEl.classList.toggle('hidden', !result.optimal);
-        }
-
-        function toggleDay(day) {
-            if (currentDay === day) return;
-            currentDay = day;
-            document.getElementById('btn-today').classList.toggle('active', day === 'today');
-            document.getElementById('btn-tomorrow').classList.toggle('active', day === 'tomorrow');
-            updateUI();
-        }
-
-        // Événement du curseur manuel
-        const manualSlider = document.getElementById('manual-slider');
-        manualSlider.addEventListener('input', (e) => {
-            const val = parseInt(e.target.value, 10);
-            updateSliderVisuals(val);
-            document.getElementById('temp-manuelle').textContent = `${val}°C`;
-
-            const result = resolveReglage(val);
-            const settingEl = document.getElementById('setting-manuelle');
-            const waterEl = document.getElementById('water-manuelle');
-            const badgeEl = document.getElementById('badge-manuelle');
-            const cardEl = document.getElementById('card-manuelle');
-
-            settingEl.textContent = result.reglage;
-
-            if (result.reglage === "Coupé") {
-                cardEl.classList.add('cutoff');
-                waterEl.textContent = "Chauffage coupé";
-            } else {
-                cardEl.classList.remove('cutoff');
-                waterEl.textContent = `Eau ${result.eau}`;
-            }
-
-            badgeEl.classList.toggle('hidden', !result.optimal);
-
-            if (navigator.vibrate) navigator.vibrate(5);
-        });
-
-        window.addEventListener('DOMContentLoaded', () => {
-            initTimeSetting();
-            generateSliderTicks();
-            manualSlider.dispatchEvent(new Event('input'));
-            fetchWeather();
-        });
-    </script>
-</body>
-</html>
+                <div class="card-title-group">
+                    <div class="card-title-row">
+                        <div class="icon-matin-box">
+                            <svg viewBox="0 0 24 24" width="12" height="12" fill="#fff3b0">
+                                <circle cx="12" cy="13" r="4"/>
+                            </svg>
