@@ -271,7 +271,7 @@
             width: 100%;
             height: 8px;
             border-radius: 4px;
-            background: linear-gradient(to right, #3898ff 0%, #3898ff 24%, rgba(255, 255, 255, 0.16) 24%, rgba(255, 255, 255, 0.16) 100%);
+            background: linear-gradient(to right, #3898ff 0%, #3898ff 60%, rgba(255, 255, 255, 0.16) 60%, rgba(255, 255, 255, 0.16) 100%);
             outline: none;
             position: relative;
             z-index: 2;
@@ -475,12 +475,12 @@
                     </svg>
                     <span>Manuel</span>
                 </div>
-                <div class="card-temp" id="temp-manuelle">1°C</div>
+                <div class="card-temp" id="temp-manuelle">--°C</div>
             </div>
 
             <div class="manual-control">
                 <div class="slider-wrapper">
-                    <input type="range" id="manual-slider" class="custom-slider" min="-5" max="20" step="1" value="1">
+                    <input type="range" id="manual-slider" class="custom-slider" min="-5" max="20" step="1" value="10">
                     <div class="slider-ticks" id="slider-ticks"></div>
                 </div>
                 <div class="ticks-labels">
@@ -494,10 +494,10 @@
             </div>
 
             <div class="card-setting-container" style="padding-top: 10px;">
-                <div class="card-setting" id="setting-manuelle">3,25</div>
+                <div class="card-setting" id="setting-manuelle">--</div>
             </div>
             <div class="card-footer">
-                <span class="water-temp" id="water-manuelle">Eau 58°C</span>
+                <span class="water-temp" id="water-manuelle">Eau --°C</span>
                 <span class="badge hidden" id="badge-manuelle">Plage Optimale</span>
             </div>
         </div>
@@ -511,6 +511,9 @@
             const LONGITUDE = 2.019;
             const JOURS = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
             let weatherData = null;
+            let userTouchedSlider = false;
+
+            const manualSlider = document.getElementById('manual-slider');
 
             function customRound(val) {
                 return Math.floor(val + 0.5);
@@ -574,8 +577,7 @@
                 const min = -5;
                 const max = 20;
                 const percentage = ((val - min) / (max - min)) * 100;
-                const slider = document.getElementById('manual-slider');
-                slider.style.background = `linear-gradient(to right, #3898ff 0%, #3898ff ${percentage}%, rgba(255, 255, 255, 0.16) ${percentage}%, rgba(255, 255, 255, 0.16) 100%)`;
+                manualSlider.style.background = `linear-gradient(to right, #3898ff 0%, #3898ff ${percentage}%, rgba(255, 255, 255, 0.16) ${percentage}%, rgba(255, 255, 255, 0.16) 100%)`;
 
                 for (let i = min; i <= max; i++) {
                     const tick = document.getElementById(`tick-${i}`);
@@ -658,7 +660,7 @@
                 errEl.style.display = 'none';
                 try {
                     const response = await fetch(
-                        `https://api.open-meteo.com/v1/forecast?latitude=${LATITUDE}&longitude=${LONGITUDE}&hourly=temperature_2m&timezone=Europe/Paris&forecast_days=3`,
+                        `https://api.open-meteo.com/v1/forecast?latitude=${LATITUDE}&longitude=${LONGITUDE}&current=temperature_2m&hourly=temperature_2m&timezone=Europe/Paris&forecast_days=3`,
                         { cache: 'no-store' }
                     );
                     if (!response.ok) throw new Error("Erreur réseau");
@@ -672,8 +674,19 @@
                     updateWeatherCard('today-aprem', computePeriodAverage(todayISO, 10, 20));
                     updateWeatherCard('tomorrow-matin', computePeriodAverage(tomorrowISO, 6, 9));
                     updateWeatherCard('tomorrow-aprem', computePeriodAverage(tomorrowISO, 10, 20));
+
+                    // Réglage par défaut de la partie Manuel sur la température actuelle
+                    if (!userTouchedSlider && data.current && typeof data.current.temperature_2m === 'number') {
+                        const roundedCurrent = customRound(data.current.temperature_2m);
+                        const clampedCurrent = Math.max(-5, Math.min(20, roundedCurrent));
+                        manualSlider.value = clampedCurrent;
+                        updateManual(clampedCurrent);
+                    }
                 } catch (err) {
                     errEl.style.display = 'block';
+                    if (!userTouchedSlider) {
+                        updateManual(parseInt(manualSlider.value, 10));
+                    }
                 }
             }
 
@@ -760,11 +773,10 @@
             // Initialisation immédiate
             setDayLabels();
             generateSliderTicks();
-
-            const manualSlider = document.getElementById('manual-slider');
-            updateManual(parseInt(manualSlider.value, 10));
+            updateSliderVisuals(parseInt(manualSlider.value, 10));
 
             manualSlider.addEventListener('input', (e) => {
+                userTouchedSlider = true;
                 updateManual(parseInt(e.target.value, 10));
                 if (navigator.vibrate) navigator.vibrate(5);
             });
