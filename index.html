@@ -45,6 +45,45 @@
             overflow-y: auto;
         }
 
+        /* Indicateur Tirer pour actualiser */
+        .ptr-indicator {
+            width: 100%;
+            max-width: 420px;
+            margin: 0 auto;
+            height: 0;
+            opacity: 0;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 500;
+            transition: height 0.25s ease, opacity 0.25s ease;
+        }
+
+        .ptr-indicator.pulling {
+            transition: none;
+        }
+
+        .ptr-icon {
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s ease;
+        }
+
+        .ptr-indicator.refreshing .ptr-icon {
+            animation: ptr-spin 0.8s linear infinite;
+        }
+
+        @keyframes ptr-spin {
+            to { transform: rotate(360deg); }
+        }
+
         .app-grid {
             width: 100%;
             max-width: 420px;
@@ -314,6 +353,17 @@
     </style>
 </head>
 <body>
+
+    <!-- Indicateur glisser vers le bas pour actualiser -->
+    <div class="ptr-indicator" id="ptr-indicator">
+        <div class="ptr-icon" id="ptr-icon">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#3898ff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 12a9 9 0 1 1-2.64-6.36"/>
+                <polyline points="21 3 21 9 15 9"/>
+            </svg>
+        </div>
+        <span id="ptr-text">Tirer pour actualiser</span>
+    </div>
 
     <div class="app-grid">
         <!-- 1. HAUT GAUCHE : AUJOURD'HUI AM -->
@@ -607,7 +657,10 @@
                 const errEl = document.getElementById('error-msg');
                 errEl.style.display = 'none';
                 try {
-                    const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${LATITUDE}&longitude=${LONGITUDE}&hourly=temperature_2m&timezone=Europe/Paris&forecast_days=3`);
+                    const response = await fetch(
+                        `https://api.open-meteo.com/v1/forecast?latitude=${LATITUDE}&longitude=${LONGITUDE}&hourly=temperature_2m&timezone=Europe/Paris&forecast_days=3`,
+                        { cache: 'no-store' }
+                    );
                     if (!response.ok) throw new Error("Erreur réseau");
                     const data = await response.json();
                     weatherData = data.hourly;
@@ -623,6 +676,86 @@
                     errEl.style.display = 'block';
                 }
             }
+
+            // =====================================================
+            // GLISSER VERS LE BAS POUR TOUT ACTUALISER (PULL-TO-REFRESH)
+            // =====================================================
+            const ptrIndicator = document.getElementById('ptr-indicator');
+            const ptrIcon = document.getElementById('ptr-icon');
+            const ptrText = document.getElementById('ptr-text');
+            const PULL_THRESHOLD = 58;
+
+            let startY = 0;
+            let pullDistance = 0;
+            let isPulling = false;
+            let isRefreshing = false;
+            let thresholdReached = false;
+
+            window.addEventListener('touchstart', (e) => {
+                if (isRefreshing || e.touches.length !== 1) return;
+                if (e.target && e.target.closest('input')) return;
+                if (window.scrollY <= 0) {
+                    startY = e.touches[0].clientY;
+                    pullDistance = 0;
+                    isPulling = true;
+                    thresholdReached = false;
+                    ptrIndicator.classList.add('pulling');
+                }
+            }, { passive: true });
+
+            window.addEventListener('touchmove', (e) => {
+                if (!isPulling || isRefreshing) return;
+                const diff = e.touches[0].clientY - startY;
+
+                if (diff > 0 && window.scrollY <= 0) {
+                    e.preventDefault();
+                    pullDistance = Math.min(diff * 0.48, 82);
+                    ptrIndicator.style.height = `${pullDistance}px`;
+                    ptrIndicator.style.opacity = Math.min(pullDistance / 48, 1);
+                    ptrIcon.style.transform = `rotate(${Math.round(pullDistance * 3.2)}deg)`;
+
+                    if (pullDistance >= PULL_THRESHOLD) {
+                        ptrText.textContent = 'Relâcher pour actualiser';
+                        if (!thresholdReached) {
+                            thresholdReached = true;
+                            if (navigator.vibrate) navigator.vibrate(10);
+                        }
+                    } else {
+                        ptrText.textContent = 'Tirer pour actualiser';
+                        thresholdReached = false;
+                    }
+                } else if (diff < 0) {
+                    isPulling = false;
+                    ptrIndicator.classList.remove('pulling');
+                    ptrIndicator.style.height = '0px';
+                    ptrIndicator.style.opacity = '0';
+                }
+            }, { passive: false });
+
+            function finishPull() {
+                if (!isPulling) return;
+                isPulling = false;
+                ptrIndicator.classList.remove('pulling');
+
+                if (pullDistance >= PULL_THRESHOLD) {
+                    isRefreshing = true;
+                    ptrIndicator.classList.add('refreshing');
+                    ptrIndicator.style.height = '44px';
+                    ptrIndicator.style.opacity = '1';
+                    ptrIcon.style.transform = '';
+                    ptrText.textContent = 'Actualisation...';
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 300);
+                } else {
+                    ptrIndicator.style.height = '0px';
+                    ptrIndicator.style.opacity = '0';
+                }
+                pullDistance = 0;
+            }
+
+            window.addEventListener('touchend', finishPull, { passive: true });
+            window.addEventListener('touchcancel', finishPull, { passive: true });
 
             // Initialisation immédiate
             setDayLabels();
